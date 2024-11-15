@@ -3,7 +3,7 @@
   "appId": "woocommerce0",
   "chatVendor": "bedrock",
   "kbDescription": "AI agent designed to assist with WooCommerce tasks.",
-  "kbTitle": "ai-agent-for-woocommerce",
+  "kbTitle": "AI Agent for WooCommerce",
   "model": "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
   "inputTools": [
     "speechToText"
