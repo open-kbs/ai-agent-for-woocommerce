@@ -5,12 +5,12 @@ export const getActions = (meta) => [
 
     // execute any JS code
     [/``javascript\s*([\s\S]*?)\s*``/, async (match) => {
-        const sourceCode = match[1];
+        const sourceCode = match[1]
+            .replace(`\{\{secrets.wpapiKey\}\}`,'{{secrets.wpapiKey}}')
+            .replace(`\{\{secrets.wpUrl\}\}`,'{{secrets.wpUrl}}')
 
         // Create a new script from the source code
         const script = new vm.Script(sourceCode);
-        const wpapiKey = '{{secrets.wpapiKey}}';
-        const wpUrl = '{{secrets.wpUrl}}';
 
         // Create a new context for the script to run in
         const context = {
@@ -18,7 +18,6 @@ export const getActions = (meta) => [
                 // allow to "require" any available module
                 return rootContext.require(id)
             },
-            secrets: { wpapiKey, wpUrl }, // provide the secrets
             ...rootContext,
             console,
             module: { exports: {} }

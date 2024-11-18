@@ -26,8 +26,8 @@ const axios = require('axios');
 
 const handler = async () => {
     // Generate code here to perform the desired operations and get a response.
-    const url = secrets.wpUrl;
-    const headers = { 'WP-API-KEY': secrets.wpapiKey };
+    const url = '{{secrets.wpUrl}}';
+    const headers = { 'WP-API-KEY': '{{secrets.wpapiKey}}' };
 
     try {
         // Code examples:
