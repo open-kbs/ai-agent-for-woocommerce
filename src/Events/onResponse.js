@@ -1,7 +1,7 @@
 import {getActions} from './actions.js';
 
 export const handler = async (event) => {
-    const maxSelfInvokeMessagesCount = 25;
+    const maxSelfInvokeMessagesCount = 10;
     const actions = getActions({
         _meta_actions: event?.payload?.messages?.length > maxSelfInvokeMessagesCount ? [] : ["REQUEST_CHAT_MODEL"]
     });

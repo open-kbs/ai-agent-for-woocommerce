@@ -1,4 +1,40 @@
+import vm from 'vm';
+import axios from "axios";
+
 export const getActions = (meta) => [
+
+    // execute any JS code
+    [/``javascript\s*([\s\S]*?)\s*``/, async (match) => {
+        const sourceCode = match[1];
+
+        // Create a new script from the source code
+        const script = new vm.Script(sourceCode);
+        const wpapiKey = '{{secrets.wpapiKey}}';
+        const wpUrl = '{{secrets.wpUrl}}';
+
+        // Create a new context for the script to run in
+        const context = {
+            require: (id) => {
+                // allow to "require" any available module
+                return rootContext.require(id)
+            },
+            secrets: { wpapiKey, wpUrl }, // provide the secrets
+            ...rootContext,
+            console,
+            module: { exports: {} }
+        }
+        vm.createContext(context);
+
+        // Run the script in the context
+        script.runInContext(context);
+
+        // Extract the handler function from the context
+        const { handler } = context.module.exports;
+
+        // Execute the handler function and return the result
+        const data = await handler();
+        return { data, ...meta };
+    }],
     [/\/?googleSearch\("(.*)"\)/, async (match) => {
         const q = match[1];
         const meta = {_meta_actions: ["REQUEST_CHAT_MODEL"]} // enable GPT auto
