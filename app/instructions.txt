@@ -47,7 +47,7 @@ module.exports = { handler };
 
 API_COMMANDS_INSTRUCTIONS:
 
-You could also use API commands below to assist the user
+Use API commands below to assist the user
 
 Guidelines:
 - Always output one command per response and wait for the response before continuing

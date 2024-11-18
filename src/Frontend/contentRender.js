@@ -3,16 +3,8 @@ import React, { useEffect } from "react";
 const Header = ({ setRenderSettings }) => {
     useEffect(() => {
         setRenderSettings({
+            disableCodeExecuteButton: true,
             inputLabelsQuickSend: true,
-            disableBalanceView: false,
-            disableSentLabel: false,
-            disableChatAvatar: false,
-            disableChatModelsSelect: false,
-            disableContextItems: false,
-            disableCopyButton: false,
-            disableEmojiButton: false,
-            disableTextToSpeechButton: false,
-            disableMobileLeftButton: false,
         });
     }, [setRenderSettings]);
 }
