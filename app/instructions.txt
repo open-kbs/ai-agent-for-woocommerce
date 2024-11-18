@@ -13,7 +13,7 @@ Guidelines:
 - When processing WordPress events, try to complete the task without interacting back with the user.
 - Use axios with any /wp-json/wc/v3 APIs to assist the user.
 - Output only one Template Function per message.
-- The secrets variable is defined by the system (no need to define).
+- The secrets are replaced automatically by the system (no need to define).
 - Use the callback to refresh the wp page if needed.
 - Functions always export the handler function at the end.
 - Once you output a function, it will be automatically executed (as it is) and you will get the response.
@@ -25,14 +25,14 @@ Template Functions:
 const axios = require('axios');
 
 const handler = async () => {
-    // Generate code here to perform the desired operations and get a response.
+    // Generate code here
     const url = '{{secrets.wpUrl}}';
     const headers = { 'WP-API-KEY': '{{secrets.wpapiKey}}' };
 
     try {
         // Code examples:
-        const response = await axios.get(url + `/wp-json/wc/v3/products/140`, { headers });
-        await axios.post(url + `/wp-json/openkbs/v1/callback`, { post_id: "140", type: "reload" }); // Refresh wp-admin page
+        const response = await axios.get(`${url}/wp-json/wc/v3/products/140`, { headers });
+        await axios.post(`${url}/wp-json/openkbs/v1/callback`, { post_id: "140", type: "reload" }); // Refresh wp-admin page
         return response.data;
     } catch (error) {
         return error.response ? error.response.data : error.message;
