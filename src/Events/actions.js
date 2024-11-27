@@ -34,6 +34,7 @@ export const getActions = (meta) => [
         const data = await handler();
         return { data, ...meta };
     }],
+
     [/\/?googleSearch\("(.*)"\)/, async (match) => {
         const q = match[1];
         const meta = {_meta_actions: ["REQUEST_CHAT_MODEL"]} // enable GPT auto
@@ -79,6 +80,26 @@ export const getActions = (meta) => [
             ],
             ...meta
         };
+    }],
+
+    // handle writeFileStart and writeFileEnd
+    [/\/writeFileStart\("([^"]+)"\)\s*([\s\S]*?)\/writeFileEnd/, async (match) => {
+        const filePath = match[1];
+        const fileContent = match[2];
+
+        try {
+            const url = '{{secrets.wpUrl}}';
+            const headers = { 'WP-API-KEY': '{{secrets.wpapiKey}}' };
+            const fsUrl = `${url}/wp-json/openkbs/v1/filesystem`
+            const response = await axios.post(`${fsUrl}/write`, { path: filePath, content: fileContent }, { headers });
+            if (response.status === 200) {
+                return { data: { message: "File created or updated successfully" }, ...meta };
+            } else {
+                return { data: { error: "Failed to create or update file" }, ...meta };
+            }
+        } catch (e) {
+            return { error: e.response?.data || e.message, ...meta };
+        }
     }],
 
 ];
