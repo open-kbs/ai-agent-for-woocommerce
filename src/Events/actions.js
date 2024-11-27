@@ -82,24 +82,68 @@ export const getActions = (meta) => [
         };
     }],
 
-    // handle writeFileStart and writeFileEnd
-    [/\/writeFileStart\("([^"]+)"\)\s*([\s\S]*?)\/writeFileEnd/, async (match) => {
-        const filePath = match[1];
-        const fileContent = match[2];
+    [/```php\s*\/\/ ([^\n]+)\s*([\s\S]*?)```/g, async (match, event) => {
+        // Get the full message content
+        const lastMessage = event.payload.messages[event.payload.messages.length - 1].content;
+
+        // Find all matches in the message
+        const files = Array.from(lastMessage.matchAll(/```php\s*\/\/ ([^\n]+)\s*([\s\S]*?)```/g))
+            .map(([_, path, content]) => ({
+                path: path.trim(),
+                content: content.trim()
+            }));
+
+        return {files}
+
+        if (files.length === 0) {
+            return {
+                error: "No valid PHP files found",
+                ...meta
+            };
+        }
 
         try {
             const url = '{{secrets.wpUrl}}';
             const headers = { 'WP-API-KEY': '{{secrets.wpapiKey}}' };
-            const fsUrl = `${url}/wp-json/openkbs/v1/filesystem`
-            const response = await axios.post(`${fsUrl}/write`, { path: filePath, content: fileContent }, { headers });
-            if (response.status === 200) {
-                return { data: { message: "File created or updated successfully" }, ...meta };
+            const fsUrl = `${url}/wp-json/openkbs/v1/filesystem`;
+
+            // Process all files in parallel
+            const results = await Promise.all(
+                files.map(file =>
+                    axios.post(
+                        `${fsUrl}/write`,
+                        { path: file.path, content: file.content },
+                        { headers }
+                    )
+                )
+            );
+
+            // Check if all operations were successful
+            const allSuccessful = results.every(r => r.status === 200);
+
+            if (allSuccessful) {
+                return {
+                    data: {
+                        message: "All files created or updated successfully",
+                        files: files.map(f => f.path)
+                    },
+                    ...meta
+                };
             } else {
-                return { data: { error: "Failed to create or update file" }, ...meta };
+                return {
+                    data: {
+                        error: "Some files failed to create or update",
+                        results: results.map((r, i) => ({
+                            path: files[i].path,
+                            success: r.status === 200
+                        }))
+                    },
+                    ...meta
+                };
             }
         } catch (e) {
             return { error: e.response?.data || e.message, ...meta };
         }
-    }],
+    }]
 
 ];
