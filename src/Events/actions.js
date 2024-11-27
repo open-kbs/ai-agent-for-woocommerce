@@ -82,18 +82,16 @@ export const getActions = (meta) => [
         };
     }],
 
-    [/```php\s*\/\/ ([^\n]+)\s*([\s\S]*?)```/g, async (match, event) => {
+    [/```writeFile\s*([^\n]+)\s*([\s\S]*?)```/g, async (match, event) => {
         // Get the full message content
         const lastMessage = event.payload.messages[event.payload.messages.length - 1].content;
 
         // Find all matches in the message
-        const files = Array.from(lastMessage.matchAll(/```php\s*\/\/ ([^\n]+)\s*([\s\S]*?)```/g))
+        const files = Array.from(lastMessage.matchAll(/```writeFile\s*([^\n]+)\s*([\s\S]*?)```/g))
             .map(([_, path, content]) => ({
                 path: path.trim(),
                 content: content.trim()
             }));
-
-        return {files}
 
         if (files.length === 0) {
             return {
