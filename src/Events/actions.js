@@ -1,33 +1,39 @@
 import vm from 'vm';
 import axios from "axios";
 
-const batchRegex = /(?:```writeFile\s*([^\n]+)\s*([\s\S]*?)```|``javascript\s*([\s\S]*?)\s*``)/g;
+// Updated regex to include all command types
+const batchRegex = /(?:```writeFile\s*([^\n]+)\s*([\s\S]*?)```|``javascript\s*([\s\S]*?)\s*``|\/?(googleSearch|webpageToText|viewImage)\("([^"]*)"\))/g;
 
 export const getActions = (meta) => [
     [batchRegex, async (match, event) => {
         // Get the full message content
         const lastMessage = event.payload.messages[event.payload.messages.length - 1].content;
 
-        // Find all blocks in order, preserving their position
+        // Find all blocks and commands in order
         const blocks = Array.from(lastMessage.matchAll(batchRegex))
-            .map(([full, filePath, fileContent, jsContent]) => {
+            .map(([full, filePath, fileContent, jsContent, commandType, commandArg]) => {
                 if (filePath && fileContent) {
                     return {
                         type: 'writeFile',
                         path: filePath.trim(),
                         content: fileContent.trim()
                     };
-                } else {
+                } else if (jsContent) {
                     return {
                         type: 'javascript',
                         content: jsContent.trim()
+                    };
+                } else if (commandType) {
+                    return {
+                        type: commandType,
+                        arg: commandArg
                     };
                 }
             });
 
         if (blocks.length === 0) {
             return {
-                error: "No valid blocks found",
+                error: "No valid blocks or commands found",
                 ...meta
             };
         }
@@ -36,44 +42,100 @@ export const getActions = (meta) => [
             // Process blocks sequentially in order
             const results = [];
             for (const block of blocks) {
-                if (block.type === 'writeFile') {
-                    const url = '{{secrets.wpUrl}}';
-                    const headers = { 'WP-API-KEY': '{{secrets.wpapiKey}}' };
-                    const fsUrl = `${url}/wp-json/openkbs/v1/filesystem`;
+                switch (block.type) {
+                    case 'writeFile': {
+                        const url = '{{secrets.wpUrl}}';
+                        const headers = { 'WP-API-KEY': '{{secrets.wpapiKey}}' };
+                        const fsUrl = `${url}/wp-json/openkbs/v1/filesystem`;
 
-                    const response = await axios.post(
-                        `${fsUrl}/write`,
-                        { path: block.path, content: block.content },
-                        { headers }
-                    );
+                        const response = await axios.post(
+                            `${fsUrl}/write`,
+                            { path: block.path, content: block.content },
+                            { headers }
+                        );
 
-                    results.push({
-                        type: 'writeFile',
-                        path: block.path,
-                        success: response.status === 200
-                    });
-                } else if (block.type === 'javascript') {
-                    const sourceCode = block.content
-                        .replace(`\{\{secrets.wpapiKey\}\}`, '{{secrets.wpapiKey}}')
-                        .replace(`\{\{secrets.wpUrl\}\}`, '{{secrets.wpUrl}}');
+                        results.push({
+                            type: 'writeFile',
+                            path: block.path,
+                            success: response.status === 200
+                        });
+                        break;
+                    }
 
-                    const script = new vm.Script(sourceCode);
-                    const context = {
-                        require: (id) => rootContext.require(id),
-                        ...rootContext,
-                        console,
-                        module: { exports: {} }
-                    };
-                    vm.createContext(context);
-                    script.runInContext(context);
-                    const { handler } = context.module.exports;
-                    const data = await handler();
+                    case 'javascript': {
+                        const sourceCode = block.content
+                            .replace(`\{\{secrets.wpapiKey\}\}`, '{{secrets.wpapiKey}}')
+                            .replace(`\{\{secrets.wpUrl\}\}`, '{{secrets.wpUrl}}');
 
-                    results.push({
-                        type: 'javascript',
-                        success: true,
-                        data
-                    });
+                        const script = new vm.Script(sourceCode);
+                        const context = {
+                            require: (id) => rootContext.require(id),
+                            ...rootContext,
+                            console,
+                            module: { exports: {} }
+                        };
+                        vm.createContext(context);
+                        script.runInContext(context);
+                        const { handler } = context.module.exports;
+                        const data = await handler();
+
+                        results.push({
+                            type: 'javascript',
+                            success: true,
+                            data
+                        });
+                        break;
+                    }
+
+                    case 'googleSearch': {
+                        const noSecrets = '{{secrets.googlesearch_api_key}}'.includes('secrets.googlesearch_api_key');
+                        const params = {
+                            q: block.arg,
+                            ...(noSecrets ? {} : {
+                                key: '{{secrets.googlesearch_api_key}}',
+                                cx: '{{secrets.googlesearch_engine_id}}'
+                            })
+                        };
+                        const response = noSecrets
+                            ? await openkbs.googleSearch(params.q, params)
+                            : (await axios.get('https://www.googleapis.com/customsearch/v1', { params }))?.data?.items;
+                        const data = response?.map(({ title, link, snippet, pagemap }) => ({
+                            title, link, snippet, image: pagemap?.metatags?.[0]?.["og:image"]
+                        }));
+
+                        results.push({
+                            type: 'googleSearch',
+                            success: !!data?.length,
+                            data: data || { error: "No results found" }
+                        });
+                        break;
+                    }
+
+                    case 'webpageToText': {
+                        const response = await openkbs.webpageToText(block.arg);
+                        if (response?.content?.length > 5000) {
+                            response.content = response.content.substring(0, 5000);
+                        }
+
+                        results.push({
+                            type: 'webpageToText',
+                            success: !!response?.url,
+                            data: response?.url ? response : { error: "Unable to read website" }
+                        });
+                        break;
+                    }
+
+                    case 'viewImage': {
+                        results.push({
+                            type: 'viewImage',
+                            success: true,
+                            data: [
+                                { type: "text", text: "Image URL: " + block.arg },
+                                { type: "image_url", image_url: { url: block.arg } }
+                            ]
+                        });
+                        break;
+                    }
                 }
             }
 
@@ -83,11 +145,9 @@ export const getActions = (meta) => [
                 return {
                     data: {
                         message: "All operations completed successfully",
-                        results: results.map(r => ({
-                            type: r.type,
-                            ...(r.type === 'writeFile' ? { path: r.path } : { data: r.data })
-                        }))
+                        results
                     },
+                    _meta_actions: ["REQUEST_CHAT_MODEL"],
                     ...meta
                 };
             } else {
@@ -96,58 +156,16 @@ export const getActions = (meta) => [
                         error: "Some operations failed",
                         results
                     },
+                    _meta_actions: ["REQUEST_CHAT_MODEL"],
                     ...meta
                 };
             }
         } catch (e) {
-            return { error: e.response?.data || e.message, ...meta };
+            return {
+                error: e.response?.data || e.message,
+                _meta_actions: ["REQUEST_CHAT_MODEL"],
+                ...meta
+            };
         }
-    }],
-
-    [/\/?googleSearch\("(.*)"\)/, async (match) => {
-        const q = match[1];
-        const meta = {_meta_actions: ["REQUEST_CHAT_MODEL"]} // enable GPT auto
-        try {
-            const noSecrets = '{{secrets.googlesearch_api_key}}'.includes('secrets.googlesearch_api_key');
-            const params = { q, ...(noSecrets ? {} : { key: '{{secrets.googlesearch_api_key}}', cx: '{{secrets.googlesearch_engine_id}}' }) };
-            const response = noSecrets
-                ? await openkbs.googleSearch(params.q, params)
-                : (await axios.get('https://www.googleapis.com/customsearch/v1', { params }))?.data?.items;
-            const data = response?.map(({ title, link, snippet, pagemap }) => ({
-                title, link, snippet, image: pagemap?.metatags?.[0]?.["og:image"]
-            }));
-
-            if(!data?.length) return { data: { error: "No results found" }, ...meta };
-            return { data, ...meta };
-        } catch (e) {
-            return { error: e.response.data, ...meta };
-        }
-    }],
-
-    [/\/?webpageToText\("(.*)"\)/, async (match) => {
-        try {
-            let response = await openkbs.webpageToText(match[1]);
-
-            // limit output length
-            if (response?.content?.length > 5000) {
-                response.content = response.content.substring(0, 5000);
-            }
-            if(!response?.url) return { data: { error: "Unable to read website" }, ...meta };
-            return { data: response, ...meta };
-        } catch (e) {
-            return { error: e.response.data, ...meta };
-        }
-    }],
-
-    [/\/?viewImage\("(.*)"\)/, async (match) => {
-        const url = match[1];
-        const meta = {_meta_actions: ["REQUEST_CHAT_MODEL"]}
-        return {
-            data: [
-                { type: "text", text: "Image URL: " + url },
-                { type: "image_url", image_url: { url } }
-            ],
-            ...meta
-        };
-    }],
+    }]
 ];
