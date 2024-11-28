@@ -1,13 +1,15 @@
 import vm from 'vm';
 import axios from "axios";
 
+const batchRegex = /(?:```writeFile\s*([^\n]+)\s*([\s\S]*?)```|``javascript\s*([\s\S]*?)\s*``)/g;
+
 export const getActions = (meta) => [
-    [/(?:```writeFile\s*([^\n]+)\s*([\s\S]*?)```|``javascript\s*([\s\S]*?)\s*``)/g, async (match, event) => {
+    [batchRegex, async (match, event) => {
         // Get the full message content
         const lastMessage = event.payload.messages[event.payload.messages.length - 1].content;
 
         // Find all blocks in order, preserving their position
-        const blocks = Array.from(lastMessage.matchAll(/(?:```writeFile\s*([^\n]+)\s*([\s\S]*?)```|``javascript\s*([\s\S]*?)\s*``)/g))
+        const blocks = Array.from(lastMessage.matchAll(batchRegex))
             .map(([full, filePath, fileContent, jsContent]) => {
                 if (filePath && fileContent) {
                     return {
@@ -100,38 +102,6 @@ export const getActions = (meta) => [
         } catch (e) {
             return { error: e.response?.data || e.message, ...meta };
         }
-    }],
-
-    // execute any JS code
-    [/``javascript\s*([\s\S]*?)\s*``/, async (match) => {
-        const sourceCode = match[1]
-            .replace(`\{\{secrets.wpapiKey\}\}`,'{{secrets.wpapiKey}}')
-            .replace(`\{\{secrets.wpUrl\}\}`,'{{secrets.wpUrl}}')
-
-        // Create a new script from the source code
-        const script = new vm.Script(sourceCode);
-
-        // Create a new context for the script to run in
-        const context = {
-            require: (id) => {
-                // allow to "require" any available module
-                return rootContext.require(id)
-            },
-            ...rootContext,
-            console,
-            module: { exports: {} }
-        }
-        vm.createContext(context);
-
-        // Run the script in the context
-        script.runInContext(context);
-
-        // Extract the handler function from the context
-        const { handler } = context.module.exports;
-
-        // Execute the handler function and return the result
-        const data = await handler();
-        return { data, ...meta };
     }],
 
     [/\/?googleSearch\("(.*)"\)/, async (match) => {
