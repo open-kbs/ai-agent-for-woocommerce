@@ -50,10 +50,13 @@ export const getActions = (meta) => [
             const results = [];
             for (const block of blocks) {
                 if (block.type === 'writeFile' && detectLazyOutput(block.content)) {
-                    return {
-                        error: `Lazy comment detected in writeFile block for path: ${block.path}`,
-                        ...meta
-                    };
+                    results.push({
+                        type: 'writeFile',
+                        path: block.path,
+                        success: false,
+                        error: `Lazy comment detected in writeFile block for path: ${block.path}`
+                    });
+                    continue; // Skip processing this block further
                 }
 
                 switch (block.type) {
