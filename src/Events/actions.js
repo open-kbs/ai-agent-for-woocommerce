@@ -4,6 +4,13 @@ import axios from "axios";
 // Updated regex to include all command types
 const batchRegex = /(?:```writeFile\s*([^\n]+)\s*([\s\S]*?)```|``javascript\s*([\s\S]*?)\s*``|\/?(googleSearch|webpageToText|viewImage)\("([^"]*)"\))/g;
 
+function detectLazyOutput(text) {
+    return text.split('\n').some(line => {
+        const commentContent = line.trim().substring(2).trim().toLowerCase();
+        return line.trim().startsWith('//') && ['...', 'same'].some(pattern => commentContent.includes(pattern));
+    });
+}
+
 export const getActions = (meta) => [
     [batchRegex, async (match, event) => {
         // Get the full message content
@@ -42,6 +49,13 @@ export const getActions = (meta) => [
             // Process blocks sequentially in order
             const results = [];
             for (const block of blocks) {
+                if (block.type === 'writeFile' && detectLazyOutput(block.content)) {
+                    return {
+                        error: `Lazy comment detected in writeFile block for path: ${block.path}`,
+                        ...meta
+                    };
+                }
+
                 switch (block.type) {
                     case 'writeFile': {
                         const url = '{{secrets.wpUrl}}';
