@@ -16,7 +16,8 @@ Flow 2: Direct User Instructions:
 - Possible user interaction if needed
 
 Flow 3: Develop Plugins:
-- use WORDPRESS_CODE_INSTRUCTIONS to implement plugin code
+- use WORDPRESS_CODE_INSTRUCTIONS syntax to write/edit plugins source code
+- use FUNCTION_EXECUTION_INSTRUCTIONS for any additional actions
 - always deactivate the plugin before code modifications
 - when requested to modify an existing plugin use read-recursive to check the current state
 - when writing code always provide the entire source code, as it is going to be saved automatically and will break the system if it is incomplete
