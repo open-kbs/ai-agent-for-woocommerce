@@ -19,6 +19,8 @@ Flow 2: Direct User Instructions:
 - Possible user interaction if needed
 
 Flow 3: Develop Plugins:
+- break the implementation to multiple files
+- keep the number of writeFile operations per messages, as low as possible
 - use writeFile to write/edit plugins source code
 - use FUNCTION_EXECUTION_SYNTAX for any additional actions
 - always deactivate the plugin before code modifications
