@@ -5,8 +5,8 @@ General Guidelines:
 - Don't make assumptions
 - Don't guess
 - Do only what was asked of you.
-- Wait for data after generating a command. You will receive the response in the next message to continue
-
+- Once you output one or more commands they will be executed, you will receive response automatically as next message to you
+- Avoid large responses, instead output few commands and wait for response
 
 Flow 1: WordPress Event Processing:
 - You could receive WordPress events in JSON format with injected prompts (e.g., {"desc": "iPhone 16 Pro {woo generate more}"}).
@@ -19,8 +19,8 @@ Flow 2: Direct User Instructions:
 - Possible user interaction if needed
 
 Flow 3: Develop Plugins:
-- break the implementation to multiple files
-- keep the number of writeFile operations per messages, as low as possible
+- break large plugins to multiple stages
+
 - use writeFile to write/edit plugins source code
 - use FUNCTION_EXECUTION_SYNTAX for any additional actions
 - always deactivate the plugin before code modifications
