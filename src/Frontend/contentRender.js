@@ -31,14 +31,26 @@ const onRenderChatMessage = async (params) => {
     const { content } = params.messages[params.msgIndex];
     const { CodeViewer } = params;
 
-    if (content.match(/```/)) {
+    if (content.match(/```/) || content.match(/\/suggestion\("([^"]+)"\)/g)) {
         let language = null;
         const output = [];
 
         content.split('\n').forEach(line => {
             if (!language) {
-                language = /```(?<language>\w+)/g.exec(line)?.groups?.language;
-                output.push(language ? { language, code: '' } : line);
+                // Check for the start of a code block
+                const codeMatch = /```(?<language>\w+)/g.exec(line);
+                if (codeMatch) {
+                    language = codeMatch.groups.language;
+                    output.push({ language, code: '' });
+                } else {
+                    // Check for suggestions
+                    const suggestionMatch = /\/suggestion\("([^"]+)"\)/g.exec(line);
+                    if (suggestionMatch) {
+                        output.push({ suggestion: suggestionMatch[1] });
+                    } else {
+                        output.push(line);
+                    }
+                }
             } else if (line.match(/```/)) {
                 language = null;
             } else {
@@ -46,20 +58,37 @@ const onRenderChatMessage = async (params) => {
             }
         });
 
-        return output.map((o, i) =>
-            typeof o === 'string'
-                ? <p style={{ marginTop: '0px', marginBottom: '0px' }}>{o}</p>
-                : <div>
-                    <CodeViewer
-                        limitedWidth={isMobile}
-                        language={o.language}
-                        className="codeContainer"
-                        source={o.code}
-                    />
-                </div>
-        );
+        return output.map((o, i) => {
+            if (typeof o === 'string') {
+                return <p key={i} style={{ marginTop: '0px', marginBottom: '0px' }}>{o}</p>;
+            } else if (o.suggestion) {
+                return (
+                    <div key={`a${i}`}>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => alert(o.suggestion)}
+                            style={{ margin: '5px', textTransform: 'none' }}
+                        >
+                            {o.suggestion}
+                        </Button>
+                    </div>
+                );
+            } else {
+                return (
+                    <div key={i}>
+                        <CodeViewer
+                            limitedWidth={isMobile}
+                            language={o.language}
+                            className="codeContainer"
+                            source={o.code}
+                        />
+                    </div>
+                );
+            }
+        });
     }
-}
+};
 
 
 const exports = { onRenderChatMessage, Header };
