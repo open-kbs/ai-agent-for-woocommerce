@@ -1,4 +1,20 @@
 import React, { useEffect } from "react";
+import { Button } from '@mui/material';
+
+const style = document.createElement('style');
+style.innerHTML = `
+    .codeContainer, .codeContainer code {
+        background-color: #0d0d0d !important;
+        color: white !important;
+        text-shadow: none !important;
+        border-radius: 10px !important;
+        font-size: 13px !important;
+    }
+    .codeContainer * {
+        background-color: #0d0d0d !important;
+    }
+`;
+document.head.appendChild(style);
 
 const Header = ({ setRenderSettings }) => {
     useEffect(() => {
@@ -9,6 +25,43 @@ const Header = ({ setRenderSettings }) => {
     }, [setRenderSettings]);
 }
 
-const exports = { Header };
+const isMobile = window.openkbs.isMobile
+
+const onRenderChatMessage = async (params) => {
+    const { content } = params.messages[params.msgIndex];
+    const { CodeViewer } = params;
+
+    if (content.match(/```/)) {
+        let language = null;
+        const output = [];
+
+        content.split('\n').forEach(line => {
+            if (!language) {
+                language = /```(?<language>\w+)/g.exec(line)?.groups?.language;
+                output.push(language ? { language, code: '' } : line);
+            } else if (line.match(/```/)) {
+                language = null;
+            } else {
+                output[output.length - 1].code += line + '\n';
+            }
+        });
+
+        return output.map((o, i) =>
+            typeof o === 'string'
+                ? <p style={{ marginTop: '0px', marginBottom: '0px' }}>{o}</p>
+                : <div>
+                    <CodeViewer
+                        limitedWidth={isMobile}
+                        language={o.language}
+                        className="codeContainer"
+                        source={o.code}
+                    />
+                </div>
+        );
+    }
+}
+
+
+const exports = { onRenderChatMessage, Header };
 window.contentRender = exports;
 export default exports;
