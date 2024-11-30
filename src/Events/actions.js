@@ -82,9 +82,12 @@ export const getActions = (meta) => [
                     }
 
                     case 'javascript': {
-                        const sourceCode = block.content
+                        let sourceCode = block.content
                             .replace(`\{\{secrets.wpapiKey\}\}`, '{{secrets.wpapiKey}}')
                             .replace(`\{\{secrets.wpUrl\}\}`, '{{secrets.wpUrl}}');
+
+                        // Add the export statement if it's not already present
+                        if (!sourceCode.includes('module.exports')) sourceCode += '\nmodule.exports = { handler };'
 
                         const script = new vm.Script(sourceCode);
                         const context = {

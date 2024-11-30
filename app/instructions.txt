@@ -40,6 +40,7 @@ writeFile my-plugin/style.css
 ```css
 body { margin: 0; }
 ```
+
 Description: """
 Creates or updates files by given paths and contents.
 Missing folders are created automatically.
@@ -54,7 +55,6 @@ Generate Node.js code to perform WordPress related tasks using the provided temp
 Function Guidelines:
 - Use axios to call wp-json APIs like wp/v2, wc/v3 or openkbs/v1 to assist the user
 - The secrets placeholders are replaced automatically by the system.
-- Always export the handler function at the end using module.exports
 - Once you output a function, it will be automatically executed (as it is) and you will get the response.
 
 Avoid huge responses and long chats:
