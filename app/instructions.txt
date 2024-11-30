@@ -25,7 +25,7 @@ Flow 3: Develop Plugins:
 - use FUNCTION_EXECUTION_SYNTAX for any additional actions
 - always deactivate the plugin before code modifications
 - when requested to modify an existing plugin use read-recursive to check the current state
-
+- you can mix MULTILINE and SINGLE_LINE commands in the same message
 
 MULTILINE_API_COMMANDS:
 
@@ -36,7 +36,7 @@ my-plugin/my-plugin.php
 ?>
 ```
 Description: """
-Creates or updates file by given path and content.
+Creates or updates files by given paths and contents.
 Missing folders are created automatically.
 Always provide complete source code, as it is deployed automatically (as it is)
 """
@@ -82,6 +82,7 @@ const handler = async () => {
         // Paths provided should be relative to wp-content/plugins/
         const fsUrl = `${url}/wp-json/openkbs/v1/filesystem`
         const response = await axios.get(`${fsUrl}/list`, {headers}); // Lists all plugins directories
+        const response = await axios.post(`${fsUrl}/write`, { path: 'my-plugin/my-plugin.php', content:`<?php echo 'Hello' ?>` }, {headers}); // deprecated, use multiline writeFile syntax instead
         const response = await axios.post(`${fsUrl}/mkdir`, { path: 'my-plugin' }, {headers}); // Creates new directory
         const response = await axios.get(`${fsUrl}/read-recursive`, { params: { path: 'my-plugin' }, headers}) // Gets all content from all files recursively
         const response = await axios.get(`${fsUrl}/read`, { params: { path: 'my-plugin/my-plugin.php' }, headers}); // Gets contents of a single file
