@@ -5,7 +5,7 @@ export const handler = async (event) => {
     const actions = getActions({
         _meta_actions: event?.payload?.messages?.length > maxSelfInvokeMessagesCount
             ? ["REQUEST_CHAT_MODEL_EXCEEDED"]
-            : ["REQUEST_CHAT_MODEL"]
+            : []
     });
 
     for (let [regex, action] of actions) {

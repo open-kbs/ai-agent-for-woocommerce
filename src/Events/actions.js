@@ -2,7 +2,7 @@ import vm from 'vm';
 import axios from "axios";
 
 // Updated regex to include all command types
-const batchRegex = /(?:```writeFile\s*([^\n]+)\s*([\s\S]*?)```|``javascript\s*([\s\S]*?)\s*``|\/?(googleSearch|webpageToText|viewImage)\("([^"]*)"\))/g;
+const batchRegex = /(?:```writeFile\s*([^\n]+)\s*([\s\S]*?)```|``javascript\s*([\s\S]*?)\s*``|\/?(googleSearch|webpageToText|viewImage|metaAction)\("([^"]*)"\))/g;
 
 function detectLazyOutput(text) {
     return text.split('\n').some(line => {
@@ -56,7 +56,7 @@ export const getActions = (meta) => [
                         success: false,
                         error: `Lazy comment detected in writeFile block for path: ${block.path}`
                     });
-                    continue; // Skip processing this block further
+                    continue; // Skip processing this block further to avoid saving broken code
                 }
 
                 switch (block.type) {
@@ -153,8 +153,20 @@ export const getActions = (meta) => [
                         });
                         break;
                     }
+
+                    case 'metaAction': {
+                        meta._meta_actions.push(block.arg)
+                        results.push({
+                            type: 'metaAction',
+                            success: true,
+                            data: block.arg
+                        });
+                        break;
+                    }
                 }
             }
+
+            const autoExceeded = meta?._meta_actions?.includes('REQUEST_CHAT_MODEL_EXCEEDED')
 
             const allSuccessful = results.every(r => r.success);
 
@@ -164,23 +176,23 @@ export const getActions = (meta) => [
                         message: "All operations completed successfully",
                         results
                     },
-                    _meta_actions: ["REQUEST_CHAT_MODEL"],
                     ...meta
                 };
             } else {
+                if (!autoExceeded) meta._meta_actions = ["REQUEST_CHAT_MODEL"]
                 return {
                     data: {
                         error: "Some operations failed",
                         results
                     },
-                    _meta_actions: ["REQUEST_CHAT_MODEL"],
-                    ...meta
+                    ...meta,
+
                 };
             }
         } catch (e) {
+            if (!autoExceeded) meta._meta_actions = ["REQUEST_CHAT_MODEL"]
             return {
                 error: e.response?.data || e.message,
-                _meta_actions: ["REQUEST_CHAT_MODEL"],
                 ...meta
             };
         }
