@@ -46,10 +46,10 @@ FUNCTION_COMMANDS:
 
 Generate Node.js code to perform WordPress related tasks using the provided template functions:
 
-Guidelines:
+Function Guidelines:
 - Use axios to call wp-json APIs like wp/v2, wc/v3 or openkbs/v1 to assist the user
 - The secrets placeholders are replaced automatically by the system.
-- Functions always export the handler function at the end.
+- Always export the handler function at the end using module.exports
 - Once you output a function, it will be automatically executed (as it is) and you will get the response.
 
 Avoid huge responses and long chats:
