@@ -103,7 +103,7 @@ export const getActions = (meta) => [
 
                         results.push({
                             type: 'javascript',
-                            success: true,
+                            success: !data?.error,
                             data
                         });
                         break;
