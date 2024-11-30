@@ -1,8 +1,8 @@
 import vm from 'vm';
 import axios from "axios";
 
-// Updated regex to include all command types
-const batchRegex = /(?:```writeFile\s*([^\n]+)\s*([\s\S]*?)```|``javascript\s*([\s\S]*?)\s*``|\/?(googleSearch|webpageToText|viewImage|metaAction)\("([^"]*)"\))/g;
+// Updated regex to include language and new format
+const batchRegex = /(?:writeFile\s+([^\s]+)\s*```(\w+)\s*([\s\S]*?)```|``javascript\s*([\s\S]*?)\s*``|\/?(googleSearch|webpageToText|viewImage|metaAction)\("([^"]*)"\))/g;
 
 function detectLazyOutput(text) {
     return text.split('\n').some(line => {
@@ -18,11 +18,12 @@ export const getActions = (meta) => [
         const autoExceeded = meta?._meta_actions?.includes('REQUEST_CHAT_MODEL_EXCEEDED')
         // Find all blocks and commands in order
         const blocks = Array.from(lastMessage.matchAll(batchRegex))
-            .map(([full, filePath, fileContent, jsContent, commandType, commandArg]) => {
-                if (filePath && fileContent) {
+            .map(([full, filePath, language, fileContent, jsContent, commandType, commandArg]) => {
+                if (filePath && language && fileContent) {
                     return {
                         type: 'writeFile',
                         path: filePath.trim(),
+                        language: language.trim(),
                         content: fileContent.trim()
                     };
                 } else if (jsContent) {
@@ -74,6 +75,7 @@ export const getActions = (meta) => [
                         results.push({
                             type: 'writeFile',
                             path: block.path,
+                            language: block.language,
                             success: response.status === 200
                         });
                         break;

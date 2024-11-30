@@ -29,11 +29,16 @@ Flow 3: Develop Plugins:
 
 MULTILINE_COMMANDS:
 
-```writeFile
-my-plugin/my-plugin.php
+writeFile my-plugin/my-plugin.php
+```php
 <?php
     echo "Hello, World"
 ?>
+```
+
+writeFile my-plugin/style.css
+```css
+body { margin: 0; }
 ```
 Description: """
 Creates or updates files by given paths and contents.
