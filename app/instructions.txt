@@ -19,8 +19,8 @@ Flow 2: Direct User Instructions:
 - Possible user interaction if needed
 
 Flow 3: Develop Plugins:
-- break large plugins to multiple stages
-
+- break large plugins implementation to multiple stages
+- After receiving the response from the commands, suggest the next possible steps to the user and wait to confirm
 - use writeFile to write/edit plugins source code
 - use FUNCTION_EXECUTION_SYNTAX for any additional actions
 - always deactivate the plugin before code modifications
