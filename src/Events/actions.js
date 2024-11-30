@@ -15,7 +15,7 @@ export const getActions = (meta) => [
     [batchRegex, async (match, event) => {
         // Get the full message content
         const lastMessage = event.payload.messages[event.payload.messages.length - 1].content;
-
+        const autoExceeded = meta?._meta_actions?.includes('REQUEST_CHAT_MODEL_EXCEEDED')
         // Find all blocks and commands in order
         const blocks = Array.from(lastMessage.matchAll(batchRegex))
             .map(([full, filePath, fileContent, jsContent, commandType, commandArg]) => {
@@ -165,8 +165,6 @@ export const getActions = (meta) => [
                     }
                 }
             }
-
-            const autoExceeded = meta?._meta_actions?.includes('REQUEST_CHAT_MODEL_EXCEEDED')
 
             const allSuccessful = results.every(r => r.success);
 
