@@ -29,7 +29,7 @@ const isMobile = window.openkbs.isMobile
 
 const onRenderChatMessage = async (params) => {
     const { content } = params.messages[params.msgIndex];
-    const { CodeViewer } = params;
+    const { CodeViewer, setInputValue, sendButtonRippleRef } = params;
 
     if (content.match(/```/) || content.match(/\/suggestion\("([^"]+)"\)/g)) {
         let language = null;
@@ -67,7 +67,10 @@ const onRenderChatMessage = async (params) => {
                         <Button
                             variant="contained"
                             color="primary"
-                            onClick={() => alert(o.suggestion)}
+                            onClick={() => {
+                                setInputValue( (prev) => prev + (prev ? '\n' : '') + o.suggestion)
+                                setTimeout(() => sendButtonRippleRef?.current?.pulsate(), 100)
+                            }}
                             style={{ margin: '5px', textTransform: 'none' }}
                         >
                             {o.suggestion}
