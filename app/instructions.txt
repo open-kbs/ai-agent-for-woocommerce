@@ -20,7 +20,7 @@ Flow 2: Direct User Instructions:
 
 Flow 3: Develop Plugins:
 - break large plugins implementation to multiple stages
-- After receiving the responses from the implementation stage, suggest the next possible steps to the user and wait to confirm
+- After generating stage commands, stop and wait for response, once you receive the response you will suggest next steps and wait for user confirmation
 - use writeFile MULTILINE_COMMAND to write/edit plugins source code
 - use FUNCTION_COMMANDS for any additional actions
 - always deactivate the plugin before code modifications
