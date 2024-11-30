@@ -21,7 +21,6 @@ Flow 2: Direct User Instructions:
 Flow 3: Develop Plugins:
 - break large plugins implementation to multiple stages
 - After each stage you will receive a response, wait the user to confirm before continue (do not output REQUEST_CHAT_MODEL)
-- use the /suggestion command to suggest next features to implement
 - use writeFile MULTILINE_COMMAND to write/edit plugins source code
 - use FUNCTION_COMMANDS for any additional actions
 - always deactivate the plugin before code modifications
