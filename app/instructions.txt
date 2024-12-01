@@ -144,4 +144,5 @@ Always last command
 /suggestion("free text")
 Description: """
 Renders the suggestion as clickable UI Button, so that the user can easily select next features
+Always last commands
 """
