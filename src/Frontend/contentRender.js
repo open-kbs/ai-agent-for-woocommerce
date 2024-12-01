@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Button } from '@mui/material';
+import {Button, Chip, Tooltip, ThemeProvider, createTheme} from '@mui/material';
+import {Autorenew, TravelExplore, Preview, HourglassEmpty, CallMade, EditNote, Check} from '@mui/icons-material';
+
 
 const style = document.createElement('style');
 style.innerHTML = `
@@ -40,8 +42,9 @@ const ChatMessageRenderer = ({ content, CodeViewer, setInputValue, sendButtonRip
     let language = null;
 
     content.split('\n').forEach(line => {
+        const writeFileMatch = /writeFile\s+(?<filePath>[^\s]+)/.exec(line);
         const codeStartMatch = /```(?<language>\w+)/g.exec(line);
-        const commandMatch = /\/(?<command>\w+)\("([^"]+)"\)/g.exec(line);
+        const commandMatch = /\/(?<command>\w+)\("?([^"]+)"?\)/g.exec(line);
 
         if (!language && codeStartMatch) {
             language = codeStartMatch.groups.language;
@@ -50,32 +53,66 @@ const ChatMessageRenderer = ({ content, CodeViewer, setInputValue, sendButtonRip
             language = null;
         } else if (language) {
             output[output.length - 1].code += line + '\n';
-        } else if (commandMatch) {
-            const command = commandMatch.groups.command;
-            const args = commandMatch[2];
-            output.push({ command, args });
+        } else if (commandMatch || writeFileMatch) {
+            const command = commandMatch?.groups?.command || 'writeFile';
+            const args = commandMatch?.[2] || writeFileMatch?.groups?.filePath;
+            output.push({ command, args, line });
         } else {
             output.push(line);
         }
     });
 
-    return output.map((o, i) => {
+    return <ThemeProvider theme={() => createTheme(window.openkbsTheme)}>
+        {output.map((o, i) => {
         if (typeof o === 'string') {
             return <p key={i} style={{ marginTop: '0px', marginBottom: '0px' }}>{o}</p>;
         } else if (o.command) {
             if (o.command === 'suggestion') {
+                const added = addedSuggestions?.includes(o.args);
                 return (
                     <div key={`a${i}`}>
                         <Button
                             variant="contained"
                             color="primary"
+                            disabled={added}
                             onClick={() => handleSuggestionClick(o.args)}
                             style={{ margin: '5px', textTransform: 'none' }}
                         >
-                            {o.args}
+                            {added ? <Check fontSize="small" sx={{mr: 2}} /> : ''}{o.args}
                         </Button>
                     </div>
                 );
+            } else if (o.command) {
+                const argsIcons = {
+                    'execute_and_wait': <HourglassEmpty />,
+                    'execute_and_callback': <Autorenew />
+                };
+
+                const commandIcons = {
+                    'googleSearch': <TravelExplore />,
+                    'webpageToText': <Preview />,
+                    'writeFile': <EditNote  />
+                };
+
+                const icon = argsIcons[o.args] || commandIcons[o.command];
+                return <div style={{ marginTop: '5px', marginBottom: '5px' }}>
+                    <Tooltip title={o.line} placement="right">
+                        <Chip
+                            sx={{mt: '10px'}}
+                            icon={icon}
+                            label={o.args}
+                            variant="outlined"
+                            deleteIcon={ <CallMade
+                                style={{
+                                    fontSize: 12,
+                                    borderRadius: '50%',
+                                    padding: '4px',
+                                }}
+                            /> }
+                            onDelete={() => {}}
+                        />
+                    </Tooltip>
+                </div>
             }
         } else {
             return (
@@ -89,14 +126,15 @@ const ChatMessageRenderer = ({ content, CodeViewer, setInputValue, sendButtonRip
                 </div>
             );
         }
-    });
+    })}
+    </ThemeProvider>
 };
 
 const onRenderChatMessage = async (params) => {
     const { content } = params.messages[params.msgIndex];
     const { CodeViewer, setInputValue, sendButtonRippleRef } = params;
 
-    if (content.match(/```/) || content.match(/\/suggestion\("([^"]+)"\)/g)) {
+    if (content.match(/```/) || content.match(/\/(?<command>\w+)\("?([^"]+)"?\)/g)) {
         return (
             <ChatMessageRenderer
                 content={content}

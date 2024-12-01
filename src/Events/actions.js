@@ -32,7 +32,7 @@ export const getActions = (meta) => [
                         content: jsContent.trim()
                     };
                 } else if (commandType) {
-                    if (commandType === 'suggestion') disableAutoCallback = false; // require human confirmation
+                    if (commandType === 'suggestion') disableAutoCallback = true; // require human confirmation
                     return {
                         type: commandType,
                         arg: commandArg

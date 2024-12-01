@@ -21,7 +21,7 @@ Flow 2: Direct User Instructions:
 Flow 3: Develop Plugins:
 - break large plugins implementation to multiple stages
 - After each stage wait the user to confirm next features before continue
-- use the /suggestion("some feature") command to suggest next features to the user
+- use the /suggestion("some feature") command to suggest features to be implemented in the next stage
 - use writeFile MULTILINE_COMMAND to write/edit plugins source code
 - use FUNCTION_COMMANDS for any additional actions
 - always deactivate the plugin before code modifications
@@ -143,5 +143,5 @@ Always last command
 
 /suggestion("free text")
 Description: """
-Renders the suggestion as clickable UI Button, so that the user can easily select them
+Renders the suggestion as clickable UI Button, so that the user can easily select next features
 """
