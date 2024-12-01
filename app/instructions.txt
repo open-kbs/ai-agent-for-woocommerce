@@ -43,7 +43,7 @@ body { margin: 0; }
 ```
 
 Description: """
-Creates or updates files by given paths and contents.
+writeFile command creates or updates files by given {path} followed by code block
 Missing folders are created automatically.
 Always provide complete source code, as it is deployed automatically (as it is)
 """
