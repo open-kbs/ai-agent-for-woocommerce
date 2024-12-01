@@ -2,7 +2,7 @@ import vm from 'vm';
 import axios from "axios";
 
 // Updated regex to include language and new format
-const batchRegex = /(?:writeFile\s+([^\s]+)\s*```(\w+)\s*([\s\S]*?)```|``javascript\s*([\s\S]*?)\s*``|\/?(googleSearch|webpageToText|viewImage|metaAction)\("?([^"]*)"?\))/g;
+const batchRegex = /(?:writeFile\s+([^\s]+)\s*```(\w+)\s*([\s\S]*?)```|``javascript\s*([\s\S]*?)\s*``|\/?(googleSearch|webpageToText|viewImage|metaAction|suggestion)\("?([^"]*)"?\))/g;
 
 function detectLazyOutput(text) {
     return text.split('\n').some(line => {
@@ -15,7 +15,7 @@ export const getActions = (meta) => [
     [batchRegex, async (match, event) => {
         // Get the full message content
         const lastMessage = event.payload.messages[event.payload.messages.length - 1].content;
-        const autoExceeded = meta?._meta_actions?.includes('REQUEST_CHAT_MODEL_EXCEEDED')
+        let disableAutoCallback = meta?._meta_actions?.includes('REQUEST_CHAT_MODEL_EXCEEDED')
         // Find all blocks and commands in order
         const blocks = Array.from(lastMessage.matchAll(batchRegex))
             .map(([full, filePath, language, fileContent, jsContent, commandType, commandArg]) => {
@@ -32,6 +32,7 @@ export const getActions = (meta) => [
                         content: jsContent.trim()
                     };
                 } else if (commandType) {
+                    if (commandType === 'suggestion') disableAutoCallback = false; // require human confirmation
                     return {
                         type: commandType,
                         arg: commandArg
@@ -160,7 +161,7 @@ export const getActions = (meta) => [
                     }
 
                     case 'metaAction': {
-                        meta._meta_actions.push(block.arg)
+                        if (!disableAutoCallback) meta._meta_actions.push(block.arg)
                         results.push({
                             type: 'metaAction',
                             success: true,
@@ -182,7 +183,7 @@ export const getActions = (meta) => [
                     ...meta
                 };
             } else {
-                if (!autoExceeded) meta._meta_actions = ["REQUEST_CHAT_MODEL"]
+                if (!disableAutoCallback) meta._meta_actions = ["REQUEST_CHAT_MODEL"]
                 return {
                     data: {
                         error: "Some operations failed",
@@ -193,7 +194,7 @@ export const getActions = (meta) => [
                 };
             }
         } catch (e) {
-            if (!autoExceeded) meta._meta_actions = ["REQUEST_CHAT_MODEL"]
+            if (!disableAutoCallback) meta._meta_actions = ["REQUEST_CHAT_MODEL"]
             return {
                 error: e.response?.data || e.message,
                 ...meta

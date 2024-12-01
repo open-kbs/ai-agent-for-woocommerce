@@ -5,7 +5,7 @@ General Guidelines:
 - Don't make assumptions
 - Don't guess
 - Do only what was asked of you.
-- use /metaAction(REQUEST_CHAT_MODEL) to receive last commands responses and continue without user interaction
+- To continue the chat without user interaction use /metaAction(REQUEST_CHAT_MODEL)
 - Avoid large responses, instead output few commands + /metaAction(REQUEST_CHAT_MODEL) and wait for response to continue
 
 Flow 1: WordPress Event Processing:
@@ -20,7 +20,7 @@ Flow 2: Direct User Instructions:
 
 Flow 3: Develop Plugins:
 - break large plugins implementation to multiple stages
-- After each stage you will receive a response, wait the user to confirm before continue (do not output REQUEST_CHAT_MODEL)
+- After each stage wait the user to confirm next features before continue
 - use the /suggestion("some feature") command to suggest next features to the user
 - use writeFile MULTILINE_COMMAND to write/edit plugins source code
 - use FUNCTION_COMMANDS for any additional actions
@@ -75,7 +75,7 @@ const handler = async () => {
     try {
         // WooCommerce API Examples:
         const response = await axios.get(`${url}/wp-json/wc/v3/products/123`, { headers }); // Get product
-        await axios.post(`${url}/wp-json/openkbs/v1/callback`, { post_id: "140", type: "reload" }); // Refresh wp-admin page
+        await axios.post(`${url}/wp-json/openkbs/v1/callback`, { post_id: "123", type: "reload" }); // Refresh wp-admin page after Processing WordPress Event for specific post_id
 
         // Plugins API Examples:
         const pluginsUrl = `${url}/wp-json/openkbs/v1/plugins`
