@@ -41,7 +41,8 @@ const ChatMessageRenderer = ({ content, CodeViewer, setInputValue, sendButtonRip
 
     content.split('\n').forEach(line => {
         const codeStartMatch = /```(?<language>\w+)/g.exec(line);
-        const suggestionMatch = /\/suggestion\("([^"]+)"\)/g.exec(line);
+        const commandMatch = /\/(?<command>\w+)\("([^"]+)"\)/g.exec(line);
+
         if (!language && codeStartMatch) {
             language = codeStartMatch.groups.language;
             output.push({ language, code: '' });
@@ -49,11 +50,10 @@ const ChatMessageRenderer = ({ content, CodeViewer, setInputValue, sendButtonRip
             language = null;
         } else if (language) {
             output[output.length - 1].code += line + '\n';
-        } else if (suggestionMatch) {
-            const suggestion = suggestionMatch[1];
-            if (!addedSuggestions.includes(suggestion)) {
-                output.push({ suggestion });
-            }
+        } else if (commandMatch) {
+            const command = commandMatch.groups.command;
+            const args = commandMatch[2];
+            output.push({ command, args });
         } else {
             output.push(line);
         }
@@ -62,19 +62,21 @@ const ChatMessageRenderer = ({ content, CodeViewer, setInputValue, sendButtonRip
     return output.map((o, i) => {
         if (typeof o === 'string') {
             return <p key={i} style={{ marginTop: '0px', marginBottom: '0px' }}>{o}</p>;
-        } else if (o.suggestion) {
-            return (
-                <div key={`a${i}`}>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={() => handleSuggestionClick(o.suggestion)}
-                        style={{ margin: '5px', textTransform: 'none' }}
-                    >
-                        {o.suggestion}
-                    </Button>
-                </div>
-            );
+        } else if (o.command) {
+            if (o.command === 'suggestion') {
+                return (
+                    <div key={`a${i}`}>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => handleSuggestionClick(o.args)}
+                            style={{ margin: '5px', textTransform: 'none' }}
+                        >
+                            {o.args}
+                        </Button>
+                    </div>
+                );
+            }
         } else {
             return (
                 <div key={i}>
