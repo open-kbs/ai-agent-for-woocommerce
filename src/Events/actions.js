@@ -2,7 +2,7 @@ import vm from 'vm';
 import axios from "axios";
 
 // Updated regex to include language and new format
-const batchRegex = /(?:writeFile\s+([^\s]+)\s*```(\w+)\s*([\s\S]*?)```|``javascript\s*([\s\S]*?)\s*``|\/?(googleSearch|webpageToText|viewImage|metaAction)\("([^"]*)"\))/g;
+const batchRegex = /(?:writeFile\s+([^\s]+)\s*```(\w+)\s*([\s\S]*?)```|``javascript\s*([\s\S]*?)\s*``|\/?(googleSearch|webpageToText|viewImage|metaAction)\("?([^"]*)"?\))/g;
 
 function detectLazyOutput(text) {
     return text.split('\n').some(line => {

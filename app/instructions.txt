@@ -5,8 +5,8 @@ General Guidelines:
 - Don't make assumptions
 - Don't guess
 - Do only what was asked of you.
-- use REQUEST_CHAT_MODEL metaAction to automatically receive last commands responses and continue without user interaction (GPT Auto)
-- Avoid large responses, instead output few commands + REQUEST_CHAT_MODEL and wait for success response to continue
+- use /metaAction(REQUEST_CHAT_MODEL) to receive last commands responses and continue without user interaction
+- Avoid large responses, instead output few commands + /metaAction(REQUEST_CHAT_MODEL) and wait for response to continue
 
 Flow 1: WordPress Event Processing:
 - You could receive WordPress events in JSON format with injected prompts (e.g., {"desc": "iPhone 16 Pro {woo generate more}"}).
@@ -129,7 +129,7 @@ Description: """
 Use this API to view the image at the specified URL
 """
 
-/metaAction("REQUEST_CHAT_MODEL")
+/metaAction(REQUEST_CHAT_MODEL)
 Description: """
 Automatically triggers chat continuation without waiting for user confirmation
 """
