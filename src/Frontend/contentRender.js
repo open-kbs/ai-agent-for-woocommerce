@@ -53,7 +53,7 @@ const ChatMessageRenderer = ({ content, CodeViewer, setInputValue, sendButtonRip
             language = null;
         } else if (language) {
             output[output.length - 1].code += line + '\n';
-        } else if (commandMatch) {
+        } else if (commandMatch || writeFileMatch) {
             const command = commandMatch?.groups?.command || 'writeFile';
             const args = commandMatch?.[2] || writeFileMatch?.groups?.filePath;
             output.push({ command, args, line });
