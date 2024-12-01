@@ -40,26 +40,22 @@ const ChatMessageRenderer = ({ content, CodeViewer, setInputValue, sendButtonRip
     let language = null;
 
     content.split('\n').forEach(line => {
-        if (!language) {
-            const codeMatch = /```(?<language>\w+)/g.exec(line);
-            if (codeMatch) {
-                language = codeMatch.groups.language;
-                output.push({ language, code: '' });
-            } else {
-                const suggestionMatch = /\/suggestion\("([^"]+)"\)/g.exec(line);
-                if (suggestionMatch) {
-                    const suggestion = suggestionMatch[1];
-                    if (!addedSuggestions.includes(suggestion)) {
-                        output.push({ suggestion });
-                    }
-                } else {
-                    output.push(line);
-                }
-            }
-        } else if (line.match(/```/)) {
+        const codeStartMatch = /```(?<language>\w+)/g.exec(line);
+        const suggestionMatch = /\/suggestion\("([^"]+)"\)/g.exec(line);
+        if (!language && codeStartMatch) {
+            language = codeStartMatch.groups.language;
+            output.push({ language, code: '' });
+        } else if (language && line.match(/```/)) {
             language = null;
-        } else {
+        } else if (language) {
             output[output.length - 1].code += line + '\n';
+        } else if (suggestionMatch) {
+            const suggestion = suggestionMatch[1];
+            if (!addedSuggestions.includes(suggestion)) {
+                output.push({ suggestion });
+            }
+        } else {
+            output.push(line);
         }
     });
 
