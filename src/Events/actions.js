@@ -50,7 +50,9 @@ export const getActions = (meta) => [
         try {
             // Process blocks sequentially in order
             const results = [];
+            let stop;
             for (const block of blocks) {
+                if (stop) break;
                 if (block.type === 'writeFile' && detectLazyOutput(block.content)) {
                     results.push({
                         type: 'writeFile',
@@ -161,7 +163,15 @@ export const getActions = (meta) => [
                     }
 
                     case 'metaAction': {
-                        if (!disableAutoCallback) meta._meta_actions.push(block.arg)
+                        stop = true; // always last command
+                        if (block.arg === 'execute_and_callback') {
+                            if (!disableAutoCallback && !meta._meta_actions.includes('REQUEST_CHAT_MODEL')) {
+                                meta._meta_actions.push('REQUEST_CHAT_MODEL');
+                            }
+                        } else if (block.arg === 'execute_and_wait') {
+                            meta._meta_actions = meta._meta_actions.filter(action => action !== 'REQUEST_CHAT_MODEL');
+                        }
+
                         results.push({
                             type: 'metaAction',
                             success: true,
