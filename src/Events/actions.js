@@ -79,6 +79,15 @@ export const getActions = (meta) => [
                 const url = '{{secrets.wpUrl}}';
                 const headers = { 'WP-API-KEY': '{{secrets.wpapiKey}}' };
 
+                const handleJobFinished = async (block, url, headers, results) => {
+                    const { arg: data } = block;
+                    if (data.post_id) {
+                        const {post_id, message} = data;
+                        await axios.post(`${url}/wp-json/openkbs/v1/callback`, { post_id, message, type: "reload" }, { headers });
+                    }
+                    results.push({ type: block.type, success: true, data });
+                };
+
                 switch (block.type) {
                     case 'writeFile': {
                         const fsUrl = `${url}/wp-json/openkbs/v1/filesystem`;
@@ -194,21 +203,10 @@ export const getActions = (meta) => [
                         break;
                     }
 
-                    case 'jobCompleted': {
-                        const data = block.arg
-                        if (!data.post_id) break;
-                        await axios.post(`${url}/wp-json/openkbs/v1/callback`, { ...data, type: "reload" }, {headers});
-                        results.push({ type: 'jobCompleted', success: true, data});
+                    case 'jobCompleted':
+                    case 'jobFailed':
+                        await handleJobFinished(block, url, headers, results);
                         break;
-                    }
-
-                    case 'jobFailed': {
-                        const data = block.arg
-                        if (!data.post_id) break;
-                        await axios.post(`${url}/wp-json/openkbs/v1/callback`, { ...data, type: "reload" }, {headers});
-                        results.push({ type: 'jobCompleted', success: true, data});
-                        break;
-                    }
                 }
             }
 
