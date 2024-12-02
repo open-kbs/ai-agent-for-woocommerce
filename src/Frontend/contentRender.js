@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {Button, Chip, Tooltip, ThemeProvider, createTheme} from '@mui/material';
-import {CallMade} from '@mui/icons-material';
+import {Autorenew, TravelExplore, Preview, HourglassEmpty, CallMade, EditNote, CheckCircleOutline, Clear} from '@mui/icons-material';
 
 
 const style = document.createElement('style');
@@ -83,10 +83,25 @@ const ChatMessageRenderer = ({ content, CodeViewer, setInputValue, sendButtonRip
                     </div>
                 );
             } else if (o.command) {
+                const argsIcons = {
+                    'execute_and_wait': <HourglassEmpty />,
+                    'execute_and_callback': <Autorenew />
+                };
+
+                const commandIcons = {
+                    'jobCompleted': <CheckCircleOutline />,
+                    'jobFailed': <Clear />,
+                    'googleSearch': <TravelExplore />,
+                    'webpageToText': <Preview />,
+                    'writeFile': <EditNote  />
+                };
+
+                const icon = argsIcons[o.args] || commandIcons[o.command];
                 return <div style={{ marginTop: '5px', marginBottom: '5px' }}>
                     <Tooltip title={o.line} placement="right">
                         <Chip
                             sx={{mt: '10px'}}
+                            icon={icon}
                             label={o.args}
                             variant="outlined"
                             deleteIcon={ <CallMade
