@@ -92,7 +92,16 @@ export const getActions = (meta) => [
                     const { arg: data } = block;
                     if (data.post_id) {
                         const {post_id, message} = data;
-                        await axios.post(`${url}/wp-json/openkbs/v1/callback`, { post_id, message, type: "reload" }, { headers });
+                        const encryptedTitle = await openkbs.encrypt(message);
+                        await Promise.all([
+                            openkbs.chats({
+                                action: "updateChat",
+                                title: encryptedTitle,
+                                chatIcon: block?.type === 'jobCompleted' ? '🟢' : '🚫',
+                                chatId: event?.payload?.chatId
+                            }),
+                            axios.post(`${url}/wp-json/openkbs/v1/callback`, { post_id, message, type: "reload" }, { headers })
+                        ]);
                     }
                     results.push({ type: block.type, success: true, data });
                 };
