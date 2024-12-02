@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {Button, Chip, Tooltip, ThemeProvider, createTheme} from '@mui/material';
-import {Autorenew, TravelExplore, Preview, HourglassEmpty, CallMade, EditNote, Check} from '@mui/icons-material';
+import {Autorenew, TravelExplore, Preview, HourglassEmpty, CallMade, EditNote, CheckCircleOutline, Clear} from '@mui/icons-material';
 
 
 const style = document.createElement('style');
@@ -89,6 +89,8 @@ const ChatMessageRenderer = ({ content, CodeViewer, setInputValue, sendButtonRip
                 };
 
                 const commandIcons = {
+                    'jobCompleted': <CheckCircleOutline />,
+                    'jobFailed': <Clear />,
                     'googleSearch': <TravelExplore />,
                     'webpageToText': <Preview />,
                     'writeFile': <EditNote  />

@@ -90,19 +90,27 @@ export const getActions = (meta) => [
 
                 const handleJobFinished = async (block, url, headers, results) => {
                     const { arg: data } = block;
-                    if (data.post_id) {
-                        const {post_id, message} = data;
-                        const encryptedTitle = await openkbs.encrypt(message);
-                        await Promise.all([
-                            openkbs.chats({
-                                action: "updateChat",
-                                title: encryptedTitle,
-                                chatIcon: block?.type === 'jobCompleted' ? '🟢' : '🔴',
-                                chatId: event?.payload?.chatId
-                            }),
+                    const { post_id, message } = data;
+
+                    const encryptedTitle = await openkbs.encrypt(message);
+
+                    const promises = [
+                        openkbs.chats({
+                            action: "updateChat",
+                            title: encryptedTitle,
+                            chatIcon: block?.type === 'jobCompleted' ? '🟢' : '🔴',
+                            chatId: event?.payload?.chatId
+                        })
+                    ];
+
+                    if (post_id) {
+                        promises.push(
                             axios.post(`${url}/wp-json/openkbs/v1/callback`, { post_id, message, type: "reload" }, { headers })
-                        ]);
+                        );
                     }
+
+                    await Promise.all(promises);
+
                     results.push({ type: block.type, success: true, data });
                 };
 
