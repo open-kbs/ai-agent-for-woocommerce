@@ -2,7 +2,8 @@ import vm from 'vm';
 import axios from "axios";
 
 // Updated regex to include language and new format
-const batchRegex = /(?:writeFile\s+([^\s]+)\s*```(\w+)\s*([\s\S]*?)```|``javascript\s*([\s\S]*?)\s*``|\/?(googleSearch|webpageToText|viewImage|metaAction|suggestion)\("?([^"]*)"?\))/g;
+// const batchRegex = /(?:writeFile\s+([^\s]+)\s*```(\w+)\s*([\s\S]*?)```|``javascript\s*([\s\S]*?)\s*``|\/?(googleSearch|webpageToText|viewImage|metaAction|suggestion)\("?([^"]*)"?\))/g;
+const batchRegex = /(?:writeFile\s+([^\s]+)\s*```(\w+)\s*([\s\S]*?)```|``javascript\s*([\s\S]*?)\s*``|\/?(googleSearch|webpageToText|viewImage|metaAction|suggestion|jobCompleted|jobFailed)\("?([^)]*)"?\))/g;
 
 function detectLazyOutput(text) {
     return text.split('\n').some(line => {
@@ -33,9 +34,21 @@ export const getActions = (meta) => [
                     };
                 } else if (commandType) {
                     if (commandType === 'suggestion') disableAutoCallback = true; // require human confirmation
+
+                    let arg = commandArg.trim();
+                    let isJSON = false;
+
+                    // Attempt to parse the argument as JSON
+                    try {
+                        arg = JSON.parse(commandArg);
+                        isJSON = true;
+                    } catch (e) {
+                        // Argument is not JSON; proceed with the trimmed string
+                    }
+
                     return {
                         type: commandType,
-                        arg: commandArg
+                        arg: arg
                     };
                 }
             });
@@ -63,10 +76,11 @@ export const getActions = (meta) => [
                     continue; // Skip processing this block further to avoid saving broken code
                 }
 
+                const url = '{{secrets.wpUrl}}';
+                const headers = { 'WP-API-KEY': '{{secrets.wpapiKey}}' };
+
                 switch (block.type) {
                     case 'writeFile': {
-                        const url = '{{secrets.wpUrl}}';
-                        const headers = { 'WP-API-KEY': '{{secrets.wpapiKey}}' };
                         const fsUrl = `${url}/wp-json/openkbs/v1/filesystem`;
 
                         const response = await axios.post(
@@ -177,6 +191,22 @@ export const getActions = (meta) => [
                             success: true,
                             data: block.arg
                         });
+                        break;
+                    }
+
+                    case 'jobCompleted': {
+                        const data = block.arg
+                        if (!data.post_id) break;
+                        await axios.post(`${url}/wp-json/openkbs/v1/callback`, { ...data, type: "reload" }, {headers});
+                        results.push({ type: 'jobCompleted', success: true, data});
+                        break;
+                    }
+
+                    case 'jobFailed': {
+                        const data = block.arg
+                        if (!data.post_id) break;
+                        await axios.post(`${url}/wp-json/openkbs/v1/callback`, { ...data, type: "reload" }, {headers});
+                        results.push({ type: 'jobCompleted', success: true, data});
                         break;
                     }
                 }

@@ -12,7 +12,7 @@ Flow 1: WordPress Event Processing:
 - You could receive WordPress events in JSON format with injected prompts (e.g., {"desc": "iPhone 16 Pro {woo generate more}"}).
 - Automatically process the event to completion.
 - Avoid user interactions, as the user does not monitor the chat.
-- Once all necessary information is obtained, deliver the final result using the JOB_COMPLETED JSON format:
+- After completing the task, output /jobCompleted({"post_id": 123, "message": "short message"}) (e.g., for editing product 123).
 
 Flow 2: Direct User Instructions:
 - You could receive instructions in a free chat session.
@@ -75,7 +75,6 @@ const handler = async () => {
     try {
         // WooCommerce API Examples:
         const response = await axios.get(`${url}/wp-json/wc/v3/products/123`, { headers }); // Get product
-        await axios.post(`${url}/wp-json/openkbs/v1/callback`, { post_id: "123", type: "reload" }); // Refresh wp-admin page after Processing WordPress Event for specific post_id
 
         // Plugins API Examples:
         const pluginsUrl = `${url}/wp-json/openkbs/v1/plugins`
@@ -145,4 +144,14 @@ Always last command
 Description: """
 Renders the suggestion as clickable UI Button, so that the user can easily select next features
 Always last commands
+"""
+
+/jobCompleted({"post_id": , "message": ""})
+Description: """
+Success notification message
+"""
+
+/jobFailed({"post_id": 123, "message": ""})
+Description: """
+Fail notification message
 """
