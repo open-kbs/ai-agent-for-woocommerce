@@ -9,9 +9,7 @@ const batchRegex = new RegExp(
         // Match JavaScript code command
         '|``javascript\\s*([\\s\\S]*?)\\s*``',
         // Match various single-line commands with optional parameters
-        '|\\/?(googleSearch|webpageToText|viewImage|metaAction|suggestion|jobCompleted|jobFailed)\\((?:"([^"]*)"|({.*?})|([^()]*))\\)',
-
-        //'|\\/?(googleSearch|webpageToText|viewImage|metaAction|suggestion|jobCompleted|jobFailed)\\("?([^)]*)"?\\))'
+        '|\\/?(googleSearch|webpageToText|viewImage|metaAction|suggestion|jobCompleted|jobFailed)\\("?([^)]*)"?\\))'
     ].join(''),
     'g'
 );
