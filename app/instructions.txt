@@ -146,7 +146,7 @@ Renders the suggestion as clickable UI Button, so that the user can easily selec
 Always last commands
 """
 
-/jobCompleted({"post_id": , "message": ""})
+/jobCompleted({"post_id": 123, "message": ""})
 Description: """
 Success notification message
 """
