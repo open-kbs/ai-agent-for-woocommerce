@@ -97,7 +97,7 @@ export const getActions = (meta) => [
                             openkbs.chats({
                                 action: "updateChat",
                                 title: encryptedTitle,
-                                chatIcon: block?.type === 'jobCompleted' ? '🟢' : '🚫',
+                                chatIcon: block?.type === 'jobCompleted' ? '🟢' : '🔴',
                                 chatId: event?.payload?.chatId
                             }),
                             axios.post(`${url}/wp-json/openkbs/v1/callback`, { post_id, message, type: "reload" }, { headers })
