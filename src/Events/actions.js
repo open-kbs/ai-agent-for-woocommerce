@@ -5,11 +5,20 @@ import axios from "axios";
 const batchRegex = new RegExp(
     [
         // Match multi-line writeFile command with filename, language, and content
-        '(?:writeFile\\s+([^\s]+)\\s*```(\\w+)\\s*([\\s\\S]*?)```',
+        '(?:writeFile\\s+([^\s]+)\\s*```(\\w+)\\s*([\\s\\S]*?)```)',
         // Match JavaScript code command
-        '|``javascript\\s*([\\s\\S]*?)\\s*``',
+        '|```javascript\\s*([\\s\\S]*?)\\s*```',
         // Match various single-line commands with optional parameters
-        '|\\/?(googleSearch|webpageToText|viewImage|metaAction|suggestion|jobCompleted|jobFailed)\\("?([^)]*)"?\\))'
+        '|\\/?(googleSearch|webpageToText|viewImage|metaAction|suggestion|jobCompleted|jobFailed)' +
+        '\\(\\s*' +                                    // Match opening parenthesis with optional whitespace
+        '(?:' +
+        '"([^"]*?)"' +                             // Match payload within double quotes
+        '|' +
+        '({.*?})' +                                // Match JSON payload
+        '|' +
+        '([^)"\']*?)' +                            // Match unquoted payload
+        ')' +
+        '\\s*\\)'                                      // Match closing parenthesis with optional whitespace
     ].join(''),
     'g'
 );

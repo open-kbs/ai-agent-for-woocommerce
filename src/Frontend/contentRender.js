@@ -44,7 +44,8 @@ const ChatMessageRenderer = ({ content, CodeViewer, setInputValue, sendButtonRip
     content.split('\n').forEach(line => {
         const writeFileMatch = /writeFile\s+(?<filePath>[^\s]+)/.exec(line);
         const codeStartMatch = /```(?<language>\w+)/g.exec(line);
-        const commandMatch = /\/(?<command>\w+)\("?([^)]+)"?\)/g.exec(line);
+        const commandMatch = /\/(?<command>\w+)\(\s*(?:"(?<payload>[^"]+)"|\{(?<payload>[^}]+)\}|(?<payload>[^()]+))\s*\)/g.exec(line);
+
 
         if (!language && codeStartMatch) {
             language = codeStartMatch.groups.language;
@@ -55,7 +56,7 @@ const ChatMessageRenderer = ({ content, CodeViewer, setInputValue, sendButtonRip
             output[output.length - 1].code += line + '\n';
         } else if (commandMatch || writeFileMatch) {
             const command = commandMatch?.groups?.command || 'writeFile';
-            const args = commandMatch?.[2] || writeFileMatch?.groups?.filePath;
+            const args = commandMatch?.groups?.payload || writeFileMatch?.groups?.filePath;
             output.push({ command, args, line });
         } else {
             output.push(line);
