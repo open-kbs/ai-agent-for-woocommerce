@@ -2,17 +2,7 @@ import vm from 'vm';
 import axios from "axios";
 
 // Updated regex to include language and new format
-const batchRegex = new RegExp(
-    [
-        // Match multi-line writeFile command with filename, language, and content
-        '(?:writeFile\\s+([^\s]+)\\s*```(\\w+)\\s*([\\s\\S]*?)```',
-        // Match JavaScript code command
-        '|``javascript\\s*([\\s\\S]*?)\\s*``',
-        // Match various single-line commands with optional parameters
-        '|\\/?(googleSearch|webpageToText|viewImage|metaAction|suggestion|jobCompleted|jobFailed)\\("?([^)]*)"?\\))'
-    ].join(''),
-    'g'
-);
+const batchRegex = /(?:writeFile\s+([^\s]+)\s*```(\w+)\s*([\s\S]*?)```|``javascript\s*([\s\S]*?)\s*``|\/?(googleSearch|webpageToText|viewImage|metaAction|suggestion|jobCompleted|jobFailed)\("?([^)]*)"?\))/g;
 
 function detectLazyOutput(text) {
     return text.split('\n').some(line => {
