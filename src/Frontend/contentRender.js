@@ -44,7 +44,7 @@ const ChatMessageRenderer = ({ content, CodeViewer, setInputValue, sendButtonRip
     content.split('\n').forEach(line => {
         const writeFileMatch = /writeFile\s+(?<filePath>[^\s]+)/.exec(line);
         const codeStartMatch = /```(?<language>\w+)/g.exec(line);
-        const commandMatch = /\/(?<command>\w+)\("?([^)]+)"?\)/g.exec(line);
+        const commandMatch = /\/(?<command>googleSearch|webpageToText|viewImage|metaAction|suggestion|jobCompleted|jobFailed)\((?<args>[^()]*)\)/g.exec(line);
 
         if (!language && codeStartMatch) {
             language = codeStartMatch.groups.language;
@@ -55,7 +55,8 @@ const ChatMessageRenderer = ({ content, CodeViewer, setInputValue, sendButtonRip
             output[output.length - 1].code += line + '\n';
         } else if (commandMatch || writeFileMatch) {
             const command = commandMatch?.groups?.command || 'writeFile';
-            const args = commandMatch?.[2] || writeFileMatch?.groups?.filePath;
+            let args = commandMatch?.groups?.args || writeFileMatch?.groups?.filePath;
+            if (args?.startsWith('"') && args?.endsWith('"')) args = args.slice(1, -1); // remove quotes if any
             output.push({ command, args, line });
         } else {
             output.push(line);
@@ -134,7 +135,7 @@ const onRenderChatMessage = async (params) => {
     const { content } = params.messages[params.msgIndex];
     const { CodeViewer, setInputValue, sendButtonRippleRef } = params;
 
-    if (content.match(/```/) || content.match(/\/(?<command>\w+)\("?([^)]+)"?\)/g)) {
+    if (content.match(/```/) || content.match(/\/(?<command>\w+)\(([\s\S]*)\)/g)) {
         return (
             <ChatMessageRenderer
                 content={content}

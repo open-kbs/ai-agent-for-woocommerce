@@ -2,7 +2,7 @@ import vm from 'vm';
 import axios from "axios";
 
 // Updated regex to include language and new format
-const batchRegex = /(?:writeFile\s+([^\s]+)\s*```(\w+)\s*([\s\S]*?)```|``javascript\s*([\s\S]*?)\s*``|\/?(googleSearch|webpageToText|viewImage|metaAction|suggestion|jobCompleted|jobFailed)\("?([^)]*)"?\))/g;
+const batchRegex = /(?:writeFile\s+([^\s]+)\s*```(\w+)\s*([\s\S]*?)```|``javascript\s*([\s\S]*?)\s*``|\/?(googleSearch|webpageToText|viewImage|metaAction|suggestion|jobCompleted|jobFailed)\(([^()]*)\))/g;
 
 function detectLazyOutput(text) {
     return text.split('\n').some(line => {
@@ -33,6 +33,10 @@ export const getActions = (meta) => [
                     };
                 } else if (commandType) {
                     if (commandType === 'suggestion') disableAutoCallback = true; // require human confirmation
+
+                    if (commandArg?.startsWith('"') && commandArg?.endsWith('"')) {
+                        commandArg = commandArg.slice(1, -1); // remove quotes if any
+                    }
 
                     let arg = commandArg.trim();
                     let isJSON = false;
