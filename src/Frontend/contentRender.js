@@ -41,8 +41,6 @@ const ChatMessageRenderer = ({ content, CodeViewer, setInputValue, sendButtonRip
     const output = [];
     let language = null;
 
-    console.log(111, content)
-
     content.split('\n').forEach(line => {
         const writeFileMatch = /writeFile\s+(?<filePath>[^\s]+)/.exec(line);
         const codeStartMatch = /```(?<language>\w+)/g.exec(line);
