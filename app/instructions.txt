@@ -7,9 +7,7 @@ General Guidelines:
 - Do only what was asked of you.
 - To continue the chat without user interaction generate /metaAction(execute_and_callback) as last command in your message
 - Avoid large responses, instead generate few commands + /metaAction(execute_and_callback)
-- Avoid code placeholders like "Previous code remains the same"
 - Break down large code into AI-manageable chunks
-- Always provide complete source code, as it is deployed automatically (as it is)
 
 Flow 1: WordPress Event Processing:
 - You could receive WordPress events in JSON format with injected prompts (e.g., {"desc": "iPhone 16 Pro {woo generate more}"}).
@@ -46,7 +44,9 @@ body { margin: 0; }
 
 Description: """
 writeFile command creates or updates files by given {path} followed by code block
-Missing folders are created automatically.
+- Missing folders are created automatically
+- Avoid code placeholders like "Previous code remains the same"
+- Always provide complete source code, as it is deployed automatically (as it is)
 """
 </MULTILINE_COMMANDS>
 
