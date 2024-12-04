@@ -8,7 +8,7 @@ General Guidelines:
 - To open websites generate webpageToText command
 - To execute last commands and wait for user response, generate /metaAction(execute_and_wait)
 - To execute last commands and continue without user interaction, generate /metaAction(execute_and_callback)
-- Avoid large responses, instead generate few commands with /metaAction(execute_and_callback)
+- Avoid large responses, instead generate few commands + /metaAction(execute_and_callback) as last command
 - Break down large code into AI-manageable chunks
 
 Flow 1: WordPress Event Processing:
@@ -124,6 +124,7 @@ Get results from Google Search API.
 /webpageToText("URL")
 Description: """
 Use this API to extract text, images, products and other content from website (extracting data from website)
+When multiple web pages are provided generate multiple commands on new lines
 """
 
 /viewImage("imageURL")
