@@ -57,6 +57,7 @@ Function Guidelines:
 - Use axios to call wp-json APIs like wp/v2, wc/v3 or openkbs/v1 to assist the user
 - Generate only openkbs/v1 endpoints listed below
 - The secrets placeholders are replaced automatically by the system.
+- export the handler function at the end
 
 Avoid huge responses and long chats:
 - Create targeted scripts for specific data lookups instead of fetching entire datasets
