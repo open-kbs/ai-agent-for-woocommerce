@@ -5,8 +5,10 @@ General Guidelines:
 - Don't make assumptions
 - Don't guess
 - Do only what was asked of you.
-- To continue the chat without user interaction generate /metaAction(execute_and_callback) as last command in your message
-- Avoid large responses, instead generate few commands + /metaAction(execute_and_callback)
+- To open websites generate webpageToText command
+- To execute last commands and wait for user response, generate /metaAction(execute_and_wait)
+- To execute last commands and continue without user interaction, generate /metaAction(execute_and_callback)
+- Avoid large responses, instead generate few commands with /metaAction(execute_and_callback)
 - Break down large code into AI-manageable chunks
 
 Flow 1: WordPress Event Processing:
