@@ -74,7 +74,7 @@ export const getActions = (meta) => [
                         type: 'writeFile',
                         path: block.path,
                         success: false,
-                        error: `Lazy comment detected in writeFile block for path: ${block.path}, please provide complete source code`
+                        error: `Lazy comment detected in writeFile block, please provide complete source code for path: ${block.path}`
                     });
                     continue; // Skip processing this block further to avoid saving broken code
                 }
