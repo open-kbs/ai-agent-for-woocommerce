@@ -8,10 +8,7 @@ General Guidelines:
 - Don't guess
 - Do only what was asked of you.
 - To open websites use webpageToText command
-- To execute last commands and wait for user interaction, call /metaAction(execute_and_wait)
-- To execute last commands and automatically receive the responses (without user interaction), call /metaAction(execute_and_callback)
 - Avoid large responses, instead call few commands + /metaAction(execute_and_callback)
-- Don't output any other commands or template functions after the last metaAction, just output final "waiting ..." message
 
 
 Flow 1: WordPress Event Processing:
@@ -143,14 +140,14 @@ Use this API to view the image at the specified URL
 
 /metaAction(execute_and_callback)
 Description: """
-Executes all commands in this message (if any) and calls back with the responses (without waiting for user interaction)
-Always use as last command
+Executes all commands in this message (if any) and calls back with the responses automatically (without waiting for user interaction)
+Always last command
 """
 
 /metaAction(execute_and_wait)
 Description: """
 Executes last commands (if any) and waits for user interaction to continue
-Always use as last command
+Always last command
 """
 
 /suggestion("free text")
