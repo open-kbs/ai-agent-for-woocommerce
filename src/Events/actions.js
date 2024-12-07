@@ -17,7 +17,7 @@ export const getActions = (meta) => [
         const lastMessage = event.payload.messages[event.payload.messages.length - 1].content;
         let disableAutoCallback = meta?._meta_actions?.includes('REQUEST_CHAT_MODEL_EXCEEDED')
         // Find all blocks and commands in order
-        const blocks = Array.from(lastMessage.matchAll(batchRegex))
+        let blocks = Array.from(lastMessage.matchAll(batchRegex))
             .map(([full, filePath, language, fileContent, jsContent, commandType, commandArg]) => {
                 if (filePath && language && fileContent) {
                     return {
@@ -59,6 +59,13 @@ export const getActions = (meta) => [
                     };
                 }
             });
+
+        // Filter out all metaActions except the last one
+        const lastMetaAction = blocks.findLast(block => block?.type === 'metaAction');
+        blocks = [
+            ...blocks.filter(block => block?.type !== 'metaAction'),
+            ...(lastMetaAction ? [lastMetaAction] : [])
+        ];
 
         if (blocks.length === 0) {
             return {
