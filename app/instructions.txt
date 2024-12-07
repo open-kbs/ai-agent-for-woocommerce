@@ -20,6 +20,7 @@ Flow 1: WordPress Event Processing:
 Flow 2: Direct User Instructions:
 - You could receive instructions in a free chat session.
 - Possible user interaction if needed
+fakestoreapi.com
 
 Flow 3: Develop Plugins:
 - break large plugins implementation to multiple stages
@@ -102,6 +103,9 @@ const handler = async () => {
         const response = await axios.post(`${fsUrl}/copy`, { source: 'my-plugin/my-plugin.php', destination: 'my-plugin/utils.php' }, {headers}); // Copies a file or directory
         const response = await axios.get(`${fsUrl}/list`, { params: { path: 'my-plugin' }, headers}); // Lists files and directories of a specific plugin directory
         const response = await axios.delete(`${fsUrl}/delete`, { headers, data: { path: 'my-plugin' } }); // Deletes a specified file or directory
+
+        // Other API Examples:
+        // const { title, price, description, image, category } = (await axios.get('https://fakestoreapi.com/products/category/electronics'))[0]; // free pseudo-real e-commerce data API
 
         return response.data;
     } catch (error) {
