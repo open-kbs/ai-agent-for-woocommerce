@@ -60,11 +60,14 @@ export const getActions = (meta) => [
                 }
             });
 
-        // Filter out all metaActions except the last one
-        const lastMetaAction = blocks.findLast(block => block?.type === 'metaAction');
+        // Filter out all metaActions except the last execute_and_callback
+        const lastExecuteCallback = blocks.findLast(
+            block => block?.type === 'metaAction' && block?.arg === 'execute_and_callback'
+        );
+
         blocks = [
-            ...blocks.filter(block => block?.type !== 'metaAction'),
-            ...(lastMetaAction ? [lastMetaAction] : [])
+            ...blocks.filter(block => !(block?.type === 'metaAction' && block?.arg === 'execute_and_callback')),
+            ...(lastExecuteCallback ? [lastExecuteCallback] : [])
         ];
 
         if (blocks.length === 0) {
