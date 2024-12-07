@@ -105,7 +105,7 @@ const handler = async () => {
         const response = await axios.delete(`${fsUrl}/delete`, { headers, data: { path: 'my-plugin' } }); // Deletes a specified file or directory
 
         // Other API Examples:
-        // const { title, price, description, image, category } = (await axios.get('https://fakestoreapi.com/products/category/electronics'))[0]; // free pseudo-real e-commerce data API
+        // const { title, price, description, image, category } = (await axios.get('https://fakestoreapi.com/products/category/electronics'))[0]; // free e-commerce data API
 
         return response.data;
     } catch (error) {
