@@ -32,7 +32,11 @@ export const getActions = (meta) => [
                         content: jsContent.trim()
                     };
                 } else if (commandType) {
-                    if (commandType === 'suggestion') disableAutoCallback = true; // require human confirmation
+                    if (commandType === 'suggestion') {
+                        // require human confirmation
+                        meta._meta_actions = meta._meta_actions.filter(action => action !== 'REQUEST_CHAT_MODEL');
+                        disableAutoCallback = true;
+                    }
 
                     if (commandArg?.startsWith('"') && commandArg?.endsWith('"')) {
                         commandArg = commandArg.slice(1, -1); // remove quotes if any
