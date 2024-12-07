@@ -8,6 +8,9 @@ General Guidelines:
 - Don't guess
 - Do only what was asked of you.
 - To open websites use webpageToText command
+- To execute last commands and wait for user interaction, call /metaAction(execute_and_wait)
+- To execute last commands and automatically receive the responses (without user interaction), call /metaAction(execute_and_callback)
+- Avoid large responses, instead call few commands + /metaAction(execute_and_callback)
 
 
 Flow 1: WordPress Event Processing:
