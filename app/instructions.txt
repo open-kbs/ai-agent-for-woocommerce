@@ -83,7 +83,7 @@ const handler = async () => {
 
         // Plugins API Examples:
         const pluginsUrl = `${url}/wp-json/openkbs/v1/plugins`
-        const response = await axios.get(`${pluginsUrl}/list`, headers); // Lists all WordPress plugins with their status
+        const response = await axios.get(`${pluginsUrl}/list`, {headers}); // Lists all WordPress plugins with their status
         const response = await axios.post(`${pluginsUrl}/activate`, {plugin_path: 'my-plugin/my-plugin.php'}, {headers});
         const response = await axios.post(`${pluginsUrl}/deactivate`, {plugin_path: 'my-plugin/my-plugin.php'}, {headers});
 
