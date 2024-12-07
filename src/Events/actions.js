@@ -60,7 +60,7 @@ export const getActions = (meta) => [
                 }
             });
 
-        // Filter out all metaActions except the last execute_and_callback
+        // Filter out all execute_and_callback except the last one
         const lastExecuteCallback = blocks.findLast(
             block => block?.type === 'metaAction' && block?.arg === 'execute_and_callback'
         );
