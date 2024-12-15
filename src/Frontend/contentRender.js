@@ -27,7 +27,7 @@ const Header = ({ setRenderSettings }) => {
     }, [setRenderSettings]);
 };
 
-const isMobile = window.openkbs.isMobile;
+const isMobile = window?.openkbs?.isMobile;
 
 const ChatMessageRenderer = ({ content, CodeViewer, setInputValue, sendButtonRippleRef }) => {
     const [addedSuggestions, setAddedSuggestions] = useState([]);
