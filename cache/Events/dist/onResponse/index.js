@@ -125,7 +125,7 @@ const getActions = (meta) => [
         const lastMessage = event.payload.messages[event.payload.messages.length - 1].content;
         let disableAutoCallback = meta?._meta_actions?.includes('REQUEST_CHAT_MODEL_EXCEEDED')
         // Find all blocks and commands in order
-        const blocks = Array.from(lastMessage.matchAll(batchRegex))
+        let blocks = Array.from(lastMessage.matchAll(batchRegex))
             .map(([full, filePath, language, fileContent, jsContent, commandType, commandArg]) => {
                 if (filePath && language && fileContent) {
                     return {
@@ -140,7 +140,11 @@ const getActions = (meta) => [
                         content: jsContent.trim()
                     };
                 } else if (commandType) {
-                    if (commandType === 'suggestion') disableAutoCallback = true; // require human confirmation
+                    if (commandType === 'suggestion') {
+                        // require human confirmation
+                        meta._meta_actions = meta._meta_actions.filter(action => action !== 'REQUEST_CHAT_MODEL');
+                        disableAutoCallback = true;
+                    }
 
                     if (commandArg?.startsWith('"') && commandArg?.endsWith('"')) {
                         commandArg = commandArg.slice(1, -1); // remove quotes if any
@@ -164,6 +168,16 @@ const getActions = (meta) => [
                 }
             });
 
+        // Filter out all execute_and_callback except the last one
+        const lastExecuteCallback = blocks.findLast(
+            block => block?.type === 'metaAction' && block?.arg === 'execute_and_callback'
+        );
+
+        blocks = [
+            ...blocks.filter(block => !(block?.type === 'metaAction' && block?.arg === 'execute_and_callback')),
+            ...(lastExecuteCallback ? [lastExecuteCallback] : [])
+        ];
+
         if (blocks.length === 0) {
             return {
                 error: "No valid blocks or commands found",
@@ -182,7 +196,7 @@ const getActions = (meta) => [
                         type: 'writeFile',
                         path: block.path,
                         success: false,
-                        error: `Lazy comment detected in writeFile block for path: ${block.path}`
+                        error: `Lazy comment detected in writeFile block, please provide complete source code for path: ${block.path}`
                     });
                     continue; // Skip processing this block further to avoid saving broken code
                 }
@@ -373,11 +387,11 @@ const getActions = (meta) => [
 
 
 const handler = async (event) => {
-    const maxSelfInvokeMessagesCount = 30;
+    const maxSelfInvokeMessagesCount = 50;
     const actions = getActions({
         _meta_actions: event?.payload?.messages?.length > maxSelfInvokeMessagesCount
             ? ["REQUEST_CHAT_MODEL_EXCEEDED"]
-            : []
+            : ["REQUEST_CHAT_MODEL"]
     });
 
     for (let [regex, action] of actions) {
