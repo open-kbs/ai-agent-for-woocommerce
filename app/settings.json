@@ -1,7 +1,7 @@
 {
   "userId": "public",
   "appId": "woocommerce0",
-  "chatVendor": "bedrock",
+  "chatVendor": "anthropic",
   "kbDescription": "AI agent designed to automate WooCommerce admin tasks.",
   "kbTitle": "Woo Agent",
   "model": "claude-3-7-sonnet-20250219",
